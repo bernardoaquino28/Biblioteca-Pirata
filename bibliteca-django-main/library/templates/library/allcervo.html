@@ -1,0 +1,235 @@
+
+{% extends 'base.html' %}
+
+{% block estilo %}
+<style>
+    /* Reset básico */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        color: #333;
+    }
+
+    /* Container principal */
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+        color: #444;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    p {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 18px;
+    }
+
+    /* Formulário de busca */
+    form {
+        margin: 20px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    input[type="text"],
+    select,
+    button {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    input[type="text"] {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    button {
+        background-color: #007BFF;
+        color: #fff;
+        cursor: pointer;
+        border: none;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Lista de livros */
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    ul li {
+        padding: 10px 15px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    ul li a {
+        margin-left: 10px;
+        text-decoration: none;
+        color: #007BFF;
+        font-weight: bold;
+    }
+
+    ul li a:hover {
+        text-decoration: underline;
+    }
+
+    .btn {
+        display: inline-block;
+        margin: 10px 0;
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .btn:hover {
+        background: #218838;
+    }
+
+    .notifications {
+        margin-top: 30px;
+        padding: 20px;
+        background: #fdfd96;
+        border: 1px solid #f3f3c3;
+        border-radius: 5px;
+    }
+
+    .notifications li {
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    .empty {
+        text-align: center;
+        color: #888;
+        font-size: 16px;
+    }
+    .cardAcervos{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .cardAcervos img{
+        width: 100%;
+    }
+    .main-acervo li{
+        width: 15vw;
+    }
+   
+
+    .main-acervo{
+        display: flex;
+        flex-wrap: nowrap;
+        align-content: center;
+        justify-content: center;
+        align-items: stretch;
+    }
+</style>
+{% endblock estilo %}
+
+
+{% block content %}
+<div class="container">
+    <h1>todos os livros</h1>
+    <p>Bem-vindo, <strong>{{ user.username }}</strong>!</p>
+
+    <!-- Busca de Livros no google -->
+    <h2>Buscar Livros</h2>
+    <form method="get" action="">
+        <input type="text" name="q" placeholder="Buscar livros..." value="{{ search_query }}">
+    
+        <!-- Filtro por Categoria -->
+        <select name="category" aria-label="Categorias">
+            <option value="">Todas as Categorias</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id == selected_category %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+    
+        <!-- Filtro por Tag -->
+        <select name="tag" aria-label="Tags">
+            <option value="">Todas as Tags</option>
+            {% for tag in tags %}
+                <option value="{{ tag.id }}" {% if tag.id == selected_tag %}selected{% endif %}>
+                    {{ tag.name }}
+                </option>
+            {% endfor %}
+        </select>
+    
+        <button type="submit">Buscar</button>
+    </form>
+    <h2>Nosso acervo <a href=""></a></h2>
+    {% if acervos %}
+        <ul class="main-acervo">
+            {% for book in acervos %}
+                <li>
+                    <div class="cardAcervos">
+                        <img src="{{ book.thumbnail.url }}" alt="">
+                        <span>{{ book.title }}</span>
+
+                        <div>
+
+                            
+                        <a href="{{ book.pdf.url }}">Ler</a>
+                        <a href="{% url 'edit_book' book.pk %}">Editar</a>
+                        <a href="{% url 'book_detail' book.pk %}">Ver</a>
+                    
+                            
+
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty">Nenhum livro encontrado.</p>
+    {% endif %}
+    <!-- Lista de Livros -->
+    
+<div class="pagination">
+    <span class="step-links">
+        {% if acervos.has_previous %}
+            <a href="?q={{ search_query }}&page=1">Primeira</a>
+            <a href="?q={{ search_query }}&page={{ acervos.previous_page_number }}">Anterior</a>
+        {% endif %}
+        <span>Página {{ acervos.number }} de {{ acervos.paginator.num_pages }}</span>
+        {% if acervos.has_next %}
+            <a href="?q={{ search_query }}&page={{ acervos.next_page_number }}">Próxima</a>
+            <a href="?q={{ search_query }}&page={{ acervos.paginator.num_pages }}">Última</a>
+        {% endif %}
+    </span>
+</div>
+</div>
+{% endblock %}

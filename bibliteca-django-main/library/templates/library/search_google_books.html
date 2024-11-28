@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block estilo %}
+<style>
+.card-books{
+    display: flex;
+    box-shadow: 1px 2px 10px gray;
+    overflow: hidden;
+  width: 80vw;
+  margin: 10px;
+  border-radius: 23px;
+  justify-content:space-around;
+  max-width: 1000px;
+}
+.card-books-main{
+    margin-bottom:10px;
+    padding: 15px;
+}
+.container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock estilo %}
+{% block content %}
+    <h1>Pesquisar Livros</h1>
+    <form method="get" action="">
+        <input type="text" name="q" placeholder="Termos de busca" value="{{ query }}">
+        <select name="lang">
+            <option value="en" {% if lang == "en" %}selected{% endif %}>Inglês</option>
+            <option value="pt" {% if lang == "pt" %}selected{% endif %}>Português</option>
+            <option value="es" {% if lang == "es" %}selected{% endif %}>Espanhol</option>
+        </select>
+        <select name="maxResults">
+            <option value="10" {% if max_results == 10 %}selected{% endif %}>10 Resultados</option>
+            <option value="20" {% if max_results == 20 %}selected{% endif %}>20 Resultados</option>
+            <option value="40" {% if max_results == 40 %}selected{% endif %}>40 Resultados</option>
+        </select>
+        <button type="submit">Pesquisar</button>
+    </form>
+
+    <h2>Resultados</h2>
+    {% if books %}
+    <ul>
+        {% for book in books %}
+        <li class="card-books">
+            {% if book.thumbnail %}
+                <img src="{{ book.thumbnail }}" alt="Capa do livro">
+            {% endif %}
+
+            <div class="card-books-main">
+                <h3>{{ book.title }}</h3>
+                <p>Autor: {{ book.authors }}</p>
+                <p>{{ book.description }}</p>
+                <p>Editora: {{ book.publisher }}</p>
+                <p>Data de Publicação: {{ book.publishedDate }}</p>
+                <p>IF Google: {{ book.id_google }}</p>
+                
+
+                <!-- Link externo para o Google Books -->
+                {% comment %} <a href="{% url 'ver_no_google_books' book.id_google %}" target="_blank">Ver no Google Books</a>             {% endcomment %}
+                <!-- Botão para adicionar mais detalhes -->
+                <form action="{% url 'add_book_to_db' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="title" value="{{ book.title }}">
+                    <input type="hidden" name="author" value="{{ book.authors }}">
+                    <input type="hidden" name="thumbnail" value="{{ book.thumbnail }}">
+                    <input type="hidden" name="description" value="{{ book.description }}">
+                    <input type="hidden" name="publisher" value="{{ book.publisher }}">
+                    <input type="hidden" name="publishedDate" value="{{ book.publishedDate }}">
+                    <input type="hidden" name="id_google" value="{{ book.id_google }}">
+                    <button type="submit">Adicionar ao Banco</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <!-- Paginação -->
+    <nav>
+        <ul style="display: flex; gap: 1rem; list-style: none; padding: 0;">
+            {% if prev_index >= 0 %}
+            <li>
+                <a href="?q={{ query }}&lang={{ lang }}&maxResults={{ max_results }}&startIndex={{ prev_index }}">Anterior</a>
+            </li>
+            {% endif %}
+            {% if next_index < total_items %}
+            <li>
+                <a href="?q={{ query }}&lang={{ lang }}&maxResults={{ max_results }}&startIndex={{ next_index }}">Próximo</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    
+    
+    {% else %}
+        <p>Nenhum livro encontrado. Tente usar outros termos de busca.</p>
+    {% endif %}
+{% endblock %}

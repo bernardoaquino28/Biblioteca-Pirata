@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block estilo %}
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .book-cover {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background-color: #007BFF;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .details {
+            margin-bottom: 20px;
+        }
+
+        .details strong {
+            display: inline-block;
+            width: 120px;
+        }
+
+        .favorite-btn {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .favorite-btn:hover {
+            background-color: #218838;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+    {% endblock estilo %}
+    {% block content %}
+
+    <div class="container">
+        <h1>{{ book.title }}</h1>
+
+        <!-- Exibição da Capa do Livro -->
+        {% if book.thumbnail %}
+        <img src="{{ book.thumbnail.url }}" alt="Capa do livro {{ book.title }}" class="book-cover">
+        {% endif %}
+
+        <!-- Detalhes do Livro -->
+        <div class="details">
+            <p><strong>Autor:</strong> {{ book.author }}</p>
+            <p><strong>Publicado por:</strong> {{ book.publisher }}</p>
+            <p><strong>Data de publicação:</strong> {{ book.published_date }}</p>
+            <p><strong>Descrição:</strong></p>
+            <p>{{ book.description }}</p>
+            <p><strong>Formato:</strong> {{ book.get_formato_display }}</p>
+        </div>
+
+        <!-- Tags associadas -->
+        <h2>Tags</h2>
+        <div class="tags">
+            {% for tag in book.tags.all %}
+            <span class="tag">{{ tag.name }}</span>
+            {% empty %}
+            <p>Este livro ainda não possui tags associadas.</p>
+            {% endfor %}
+        </div>
+        <!-- Tags associadas -->
+        <h2>categories</h2>
+        <div class="categorie">
+            {% for categorie in book.categories.all %}
+            <span class="categorie">{{ categorie.name }}</span>
+            {% empty %}
+            <p>Este livro ainda não possui categories associadas.</p>
+            {% endfor %}
+        </div>
+        <!-- Botão de Favoritar/Desfavoritar -->
+        <form method="post" action="{% url 'toggle_favorite' book.pk %}">
+            {% csrf_token %}
+            {% if user in book.favorited_by.all %}
+            <button type="submit" class="favorite-btn">Remover dos Favoritos</button>
+            {% else %}
+            <button type="submit" class="favorite-btn">Adicionar aos Favoritos</button>
+            {% endif %}
+        </form>
+
+        <!-- Link de Voltar -->
+        <a href="{% url 'dashboard' %}" class="back-link">Voltar para o painel</a>
+{% endblock %}
